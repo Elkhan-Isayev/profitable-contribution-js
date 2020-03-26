@@ -183,7 +183,7 @@ class Artisan {
                 <tr>
                     <td>${recommendedProducts[i].bankName}</td>
                     <td>${recommendedProducts[i].investName}</td>
-                    <td>${recommendedProductsp[i].incomeType}</td>
+                    <td>${recommendedProducts[i].incomeType}</td>
                     <td>${recommendedProducts[i].totalAmount}</td>
                 </tr>`;
             }

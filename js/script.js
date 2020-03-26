@@ -4,6 +4,8 @@ class Application {
     }
 
     RUN() {
+        let artisan = new Artisan();                                    //  Создание редактора html документа
+        artisan.drawTable([]);                                          //  Очистка таблицы от прошлой итерации
         let validator = new Validator();                                //  Создание валидатора  
         let deposit = validator.verifyInputFields();                    //  Возвращение userDeposit и валидация с выводом ошибок ввода 
         if(!deposit) {                                                  //  Если валидатор вернул false
@@ -18,8 +20,7 @@ class Application {
             return;                                                     //  Конец Программы
         }
         let result = calculator.preCalculate(deposit, products);        //  Получение массива рекомендаций
-        result = calculator.prepare(result);                            //  Сортировка и подготовка массива рекомендаций
-        let artisan = new Artisan();                                    //  Создание редактора html документа
+        result = calculator.prepare(result);                            //  Сортировка и подготовка массива рекомендаций    
         artisan.drawTable(result);                                      //  Отправка отсортированного массива в html документ 
         return;                                                         //  Конец Программы
     }
@@ -53,9 +54,8 @@ class Calculator {
     calculate(deposit, product) { 
         let bankName = product.bankName;
         let investName = product.investName;
-        let incomeType = product.incomeType;        
-        // Вычисление итоговой суммы           
-        let totalAmount = deposit.initialAmount;                          
+        let incomeType = product.incomeType;                   
+        let totalAmount = deposit.initialAmount;                    // Вычисление итоговой суммы                      
         let percentPerMounth  = incomeType / 100 / 12;
         for(let i = 0; i < deposit.depositTerm; i++) {
             totalAmount += (totalAmount * percentPerMounth) + deposit.monthlyReplenishment; 
@@ -170,6 +170,9 @@ class Artisan {
     }
 
     drawTable(recommendedProducts) {
+        if(recommendedProducts.length == 0) {
+            return;
+        }
         let table = `
         <table>
             <tr>    

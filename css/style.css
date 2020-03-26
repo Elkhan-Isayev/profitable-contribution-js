@@ -15,7 +15,6 @@ body {
     border: 1px solid white;
     border-radius: 10px;
     color:black;
-    /* margin-top: 30vh; */
     padding-bottom: 10px;
 }
 
@@ -53,7 +52,6 @@ input {
     font-size: 90%;
     border: 1px solid black;
     border-radius: 5px;
-    /* border-style: none; */
     padding: 5px;
     margin: auto auto;
 }
@@ -69,10 +67,6 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
-
-
-
-
 
 footer {
     margin-top: 5%;
@@ -116,30 +110,38 @@ footer {
     margin-left: auto;
     margin-right: auto;
     width: 40%;
-    /* background-color: #fcf8e8; */
-    /* border: 1px solid white; */
     border-radius: 10px;
     color:black;
     margin-top: 5vh;
     padding-bottom: 10px;
 }
 
-/* table {
-
+table {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
 }
 
-tr {
+table td, table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
 
-} */
+table tr {
+    background-color: #fdfbf1;
+}
 
-tr:nth-child(even) {
+table tr:nth-child(even){
     background-color: #f2f2f2;
 }
 
-/* th {
-
+table tr:hover {
+    background-color: #ddd;
 }
 
-td {
-
-} */
+table th {
+    text-align: center;
+    background-color: #008000;
+    color: white;
+}

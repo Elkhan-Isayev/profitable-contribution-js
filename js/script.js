@@ -17,7 +17,11 @@ class Application {
             alert("Нет подходящих вариантов");                          //  ALERT                          
             return;                                                     //  Конец Программы
         }
-        let result = calculator.preCalculate(deposit, products);
+        let result = calculator.preCalculate(deposit, products);        //  Получение массива рекомендаций
+        result = calculator.prepare(result);                            //  Сортировка и подготовка массива рекомендаций
+        let artisan = new Artisan();                                    //  Создание редактора html документа
+        artisan.drawTable(result);                                      //  Отправка отсортированного массива в html документ 
+        return;                                                         //  Конец Программы
     }
 }
 
@@ -49,9 +53,36 @@ class Calculator {
     calculate(deposit, product) { 
         let bankName = product.bankName;
         let investName = product.investName;
-        let incomeType = product.incomeType;
-        let totalAmount ;
-        let recommendedProduct = new RecommendedProduct();
+        let incomeType = product.incomeType;        
+        // Вычисление итоговой суммы           
+        let totalAmount = deposit.initialAmount;                          
+        let percentPerMounth  = incomeType / 100 / 12;
+        for(let i = 0; i < deposit.depositTerm; i++) {
+            totalAmount += (totalAmount * percentPerMounth) + deposit.monthlyReplenishment; 
+        }
+        totalAmount = Math.round(totalAmount);
+        totalAmount -= deposit.monthlyReplenishment;
+        return new RecommendedProduct(bankName, investName, incomeType, totalAmount);
+    }
+
+    prepare(recommendedProducts) {
+        function compare(a, b) {
+            if(a.totalAmount < b.totalAmount) {
+                return 1;
+            }
+            if(a.totalAmount > b.totalAmount) {
+                return -1;
+            }
+        }
+        recommendedProducts = recommendedProducts.sort(compare);        // Сортировка callback функцией
+        let max = recommendedProducts[0].totalAmount;
+        let resultArray = [];
+        for(let i=0; i<recommendedProducts.length; i++) {
+            if(recommendedProducts[i].totalAmount == max) {
+                resultArray.push(recommendedProducts[i]);
+            }
+        }
+        return resultArray;
     }
 }
 
@@ -67,7 +98,7 @@ class Deposit {
 class BankProduct {
     constructor({bankName, investName, currency , incomeType, sumMin, sumMax, termMin, termMax, canDeposit}) {
         this.bankName   = bankName;                                                                         //  Название банка
-        this.investName = investName;                                                                       //  Вклад
+        this.investName = investName;                                                                       //  Название вклада
         this.currency   = currency;                                                                         //  Валюта          
         this.incomeType = incomeType;                                                                       //  Доходность %
         this.sumMin     = sumMin;                                                                           //  Минимальная сумма
@@ -80,11 +111,11 @@ class BankProduct {
 
 class RecommendedProduct {
     constructor(bankName, investName, incomeType, totalAmount) {
-        this.bankName = bankName;
-        this.investName = investName;
-        this.incomeType = incomeType;
-        this.totalAmount = totalAmount;
-    }
+        this.bankName       = bankName;                             // Название банка
+        this.investName     = investName;                           // Название вклада
+        this.incomeType     = incomeType;                           // Доходность %
+        this.totalAmount    = totalAmount;                          // Итоговая сумма 
+    }   
 }
 
 class Validator {
@@ -123,7 +154,7 @@ class Validator {
 
 class Parser {
     constructor() {
-        this.array = Array.from(globalArray);   // Here we get global JSON
+        this.array = Array.from(globalArray);   // JSON -> Array
     } 
     getBankProducts() {
         for(let i = 0; i < this.array.length; i++) {
@@ -138,7 +169,7 @@ class Artisan {
         this.tableId = document.getElementById('table');
     }
 
-    drawTable() {
+    drawTable(recommendedProducts) {
         let table = `
         <table>
             <tr>    
@@ -147,10 +178,17 @@ class Artisan {
                 <th>Процент</th>
                 <th>Итоговая сумма</th>
             </tr>`;
-
-
-
-        table += `</table>`;
+            for(let i = 0; i < recommendedProducts.length; i++) {
+                table += `
+                <tr>
+                    <td>${recommendedProducts[i].bankName}</td>
+                    <td>${recommendedProducts[i].investName}</td>
+                    <td>${recommendedProductsp[i].incomeType}</td>
+                    <td>${recommendedProducts[i].totalAmount}</td>
+                </tr>`;
+            }
+        table += 
+        `</table>`;
         document.getElementById('table-wrapper').innerHTML = table;
         return;
     }
@@ -166,41 +204,3 @@ class Artisan {
 }
 
 new Application();
-
-
-
-
-
-
-
-
-
-
-// function calculate(time, depositAmount, monthlyReplenishment, interestRate, depositTerm) {
-//     let percentTime = depositTerm;
-//     percentTime = Math.floor(percentTime / 30);
-//     for(let i = 0; i < percentTime; i++) {
-//         depositAmount += depositAmount * ((interestRate / 12) / 100);
-//     }
-//     if(time == 30) {
-//         depositTerm = Math.floor(depositTerm / 30);
-//         for(let i = 0; i < depositTerm; i++) {
-//             depositAmount += monthlyReplenishment;
-//         }
-//     }
-//     else if(time == 90) {
-//         depositTerm = Math.floor(depositTerm / 90);
-//         for(let i = 0; i < depositTerm; i++) {
-//             depositAmount += monthlyReplenishment;
-//         }
-//     }
-//     else if(time == 360) {        
-//         depositTerm = Math.floor(depositTerm / 360);
-//         for(let i = 0; i < depositTerm; i++) {
-//             depositAmount += monthlyReplenishment;
-//         }  
-//     }
-//     depositAmount = Math.round(depositAmount);
-//     alert(depositAmount); 
-//     return depositAmount;
-// }

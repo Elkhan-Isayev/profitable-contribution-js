@@ -4,10 +4,88 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="css/style.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
         <title>Module_2_2</title>
     </head>
     <body>
+        <div class="main-wrapper">
+            <header>
+                <h1>Подбор оптимального вклада</h1>
+                <h2><span class="star">&#9733;</span> Обязательные</h2>
+            </header>
 
+            <main>
+                <form autocomplete="off">
+                    
+                    <div class="header-via-input">
+                        <div>
+                            <p class="input-header">
+                                Начальная сумма<span class="star"><sup>&#9733;</sup></span>
+                            </p>
+                        </div>
+                        <div>
+                            <input type="number" required value="0" id="initial-amount">                        <!-- initial-amount -->
+                        </div>
+                    </div>
+
+
+                    <div class="header-via-input">
+                        <div>
+                            <p class="input-header">
+                                Сумма ежемесячного пополнения<span class="star"><sup>&#9733;</sup></span>
+                            </p>
+                        </div>
+                        <div>
+                            <input type="number" required value="0" id="amount-of-monthly-replenishment">       <!-- amount-of-monthly-replenishment -->
+                        </div>
+                    </div>
+
+                    <div class="header-via-input">
+                        <div>
+                            <p class="input-header">
+                                Срок вклада<span class="star"><sup>&#9733;</sup></span>
+                            </p>
+                        </div>
+                        <div>
+                            <input type="number" required value="0" id="deposit-term">                          <!-- deposit-term -->
+                        </div>
+                    </div>
+
+                    <div class="header-via-input">
+                        <div>
+                            <p class="input-header">
+                                Валюта вклада<span class="star"><sup>&#9733;</sup></span>
+                            </p>
+                        </div>
+                        <div>
+                            <input type="text" required placeholder="RUB/USD" id="deposit-currency">            <!-- deposit-currency -->
+                        </div>
+                    </div>
+
+                </form>
+            </main>
+
+            <footer>
+                <div class="footer-button-via-copyright">
+                    <div>
+                        <button class="button-style" id="select-button">Подобрать</button>
+                    </div>
+
+                    <div>
+                        &#169; <span class="copyright-year">2020</span>
+                    </div>
+                </div>
+                <div class="error-list-wrapper">
+                    <ol id="error-list"></ol>
+                </div>
+            </footer>
+        </div>
+
+        <div class="table-wrapper" id="table-wrapper">
+            
+        </div>
+        <script src="js/json.js"></script>
         <script src="js/script.js"></script>
+        
     </body>
 </html>

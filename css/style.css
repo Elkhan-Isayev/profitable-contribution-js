@@ -1,0 +1,145 @@
+body {
+    background: url("../assets/jesse-orrico-h6xNSDlgciU-unsplash.jpg") no-repeat fixed;
+    background-size: cover;
+    font-family: 'Roboto Mono', monospace, Arial, Helvetica, sans-serif;
+    padding-top: 20vh;
+}
+
+.main-wrapper {
+    padding: 2%;
+    padding-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    background-color: #fcf8e8;
+    border: 1px solid white;
+    border-radius: 10px;
+    color:black;
+    /* margin-top: 30vh; */
+    padding-bottom: 10px;
+}
+
+header h1 {
+    font-size: 100%;
+    text-align: center;
+}
+
+header h2 {
+    font-size: 70%;
+    text-align: left;
+}
+
+.star {
+    font-size: 80%;
+    color: red;
+}
+
+.header-via-input {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.input-header {
+    font-size: 90%;
+}
+
+.header-via-input div {
+    text-align: center;
+    margin: auto 0;
+}
+
+input {
+    font-size: 90%;
+    border: 1px solid black;
+    border-radius: 5px;
+    /* border-style: none; */
+    padding: 5px;
+    margin: auto auto;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
+
+
+
+footer {
+    margin-top: 5%;
+}
+
+.footer-button-via-copyright {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.button-style {
+    color: #ffffff;
+    border-style: none;
+    background-color: green;
+    border-radius: 5px; 
+    padding: 5px 10px;
+    
+}
+
+.button-style:active {
+    transform: translateY(2px);
+}
+
+.copyright-year {
+    font-size: 90%;
+}
+
+.error-list {
+    font-size:  75%;
+}
+
+.error-list-item {
+    color: red;
+    font-size: 75%;
+}
+
+.table-wrapper {
+    padding: 2%;
+    padding-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    /* background-color: #fcf8e8; */
+    /* border: 1px solid white; */
+    border-radius: 10px;
+    color:black;
+    margin-top: 5vh;
+    padding-bottom: 10px;
+}
+
+/* table {
+
+}
+
+tr {
+
+} */
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* th {
+
+}
+
+td {
+
+} */

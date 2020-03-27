@@ -170,10 +170,12 @@ class Artisan {
     }
 
     drawTable(recommendedProducts) {
+        let table = ``;
         if(recommendedProducts.length == 0) {
+            document.getElementById('table-wrapper').innerHTML = table;
             return;
         }
-        let table = `
+        table += `
         <table>
             <tr>    
                 <th>Название банка</th>

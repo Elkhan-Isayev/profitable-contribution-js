@@ -1,28 +1,43 @@
+"use strict";
+
+/**
+ * Profitable Contribution
+ * A small vanilla-JS app that picks the bank deposit(s) yielding the highest
+ * projected balance for a given initial amount, monthly top-up, term and currency.
+ */
+
 class Application {
-    constructor() { 
-        document.getElementById('select-button').addEventListener('click', this.RUN);
+    constructor() {
+        const form = document.getElementById("deposit-form");
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            this.run();
+        });
     }
 
-    RUN() {
-        let artisan = new Artisan();                                    //  Создание редактора html документа
-        artisan.drawTable([]);                                          //  Очистка таблицы от прошлой итерации
-        let validator = new Validator();                                //  Создание валидатора  
-        let deposit = validator.verifyInputFields();                    //  Возвращение userDeposit и валидация с выводом ошибок ввода 
-        if(!deposit) {                                                  //  Если валидатор вернул false
-            alert("Неверный формат ввода");                             //  ALERT
-            return;                                                     //  Конец Программы
+    run() {
+        const artisan = new Artisan();
+        artisan.drawTable([]);              // Clear the table from the previous run
+        artisan.drawMessage("");            // Clear any previous message
+
+        const validator = new Validator();
+        const deposit = validator.verifyInputFields();   // Validate and surface input errors
+        if (!deposit) {
+            return;
         }
-        let parser = new Parser();                                      //  Создание парсера для JSON -> Array
-        let calculator = new Calculator(parser.getBankProducts());      //  Передача калькулятору PRODUCTS
-        let products = calculator.filter(deposit);                      //  Получение фильтрованного массива PRODUCTS
-        if(products.length == 0) {                                      //  Если фильтрованный массив пуст
-            alert("Нет подходящих вариантов");                          //  ALERT                          
-            return;                                                     //  Конец Программы
+
+        const parser = new Parser();
+        const calculator = new Calculator(parser.getBankProducts());
+
+        const products = calculator.filter(deposit);     // Keep only matching products
+        if (products.length === 0) {
+            artisan.drawMessage("No deposits match your criteria. Try adjusting the amount, term or currency.");
+            return;
         }
-        let result = calculator.preCalculate(deposit, products);        //  Получение массива рекомендаций
-        result = calculator.prepare(result);                            //  Сортировка и подготовка массива рекомендаций    
-        artisan.drawTable(result);                                      //  Отправка отсортированного массива в html документ 
-        return;                                                         //  Конец Программы
+
+        let result = calculator.preCalculate(deposit, products);   // Project the final balance
+        result = calculator.prepare(result);                       // Sort and keep the best option(s)
+        artisan.drawTable(result);
     }
 }
 
@@ -32,180 +47,154 @@ class Calculator {
     }
 
     filter(deposit) {
-        this.bankProducts = this.bankProducts.filter(perBank => perBank.currency == deposit.depositCurrency);                                   //  RUB/USD
-        this.bankProducts = this.bankProducts.filter(perBank => perBank.sumMin <= deposit.initialAmount);                                       //  SUMMIN 
-        this.bankProducts = this.bankProducts.filter(perBank => (perBank.sumMax == null) ? true : perBank.sumMax >= deposit.initialAmount);     //  SUMMAX         
-        this.bankProducts = this.bankProducts.filter(perBank => perBank.termMin <= deposit.depositTerm);                                        //  TERMMIN
-        this.bankProducts = this.bankProducts.filter(perBank => perBank.termMax >= deposit.depositTerm);                                        //  TERMMAX      
-        if(deposit.monthlyReplenishment > 0) {
-            this.bankProducts = this.bankProducts.filter(perBank => perBank.canDeposit);                                                        //  CANDEPOSIT
+        let products = this.bankProducts.filter((p) => p.currency === deposit.depositCurrency);
+        products = products.filter((p) => p.sumMin <= deposit.initialAmount);
+        products = products.filter((p) => (p.sumMax === null ? true : p.sumMax >= deposit.initialAmount));
+        products = products.filter((p) => p.termMin <= deposit.depositTerm);
+        products = products.filter((p) => p.termMax >= deposit.depositTerm);
+        if (deposit.monthlyReplenishment > 0) {
+            products = products.filter((p) => p.canDeposit);
         }
-        return this.bankProducts;
+        return products;
     }
 
     preCalculate(deposit, products) {
-        let result = [];
-        for(let product of products) {
-            result.push(this.calculate(deposit, product));
-        }
-        return result;   
+        return products.map((product) => this.calculate(deposit, product));
     }
 
-    calculate(deposit, product) { 
-        let bankName = product.bankName;
-        let investName = product.investName;
-        let incomeType = product.incomeType;                   
-        let totalAmount = deposit.initialAmount;                    // Вычисление итоговой суммы                      
-        let percentPerMounth  = incomeType / 100 / 12;
-        for(let i = 0; i < deposit.depositTerm; i++) {
-            totalAmount += (totalAmount * percentPerMounth) + deposit.monthlyReplenishment; 
+    calculate(deposit, product) {
+        const monthlyRate = product.incomeType / 100 / 12;
+        let totalAmount = deposit.initialAmount;
+        for (let i = 0; i < deposit.depositTerm; i++) {
+            totalAmount += totalAmount * monthlyRate + deposit.monthlyReplenishment;
         }
-        totalAmount = Math.round(totalAmount);
-        totalAmount -= deposit.monthlyReplenishment;
-        return new RecommendedProduct(bankName, investName, incomeType, totalAmount);
+        totalAmount = Math.round(totalAmount) - deposit.monthlyReplenishment;
+        return new RecommendedProduct(product.bankName, product.investName, product.incomeType, totalAmount);
     }
 
     prepare(recommendedProducts) {
-        function compare(a, b) {
-            if(a.totalAmount < b.totalAmount) {
-                return 1;
-            }
-            if(a.totalAmount > b.totalAmount) {
-                return -1;
-            }
-        }
-        recommendedProducts = recommendedProducts.sort(compare);        // Сортировка callback функцией
-        let max = recommendedProducts[0].totalAmount;
-        let resultArray = [];
-        for(let i=0; i<recommendedProducts.length; i++) {
-            if(recommendedProducts[i].totalAmount == max) {
-                resultArray.push(recommendedProducts[i]);
-            }
-        }
-        return resultArray;
+        recommendedProducts.sort((a, b) => b.totalAmount - a.totalAmount);
+        const max = recommendedProducts[0].totalAmount;
+        return recommendedProducts.filter((p) => p.totalAmount === max);
     }
 }
 
 class Deposit {
     constructor() {
-        this.initialAmount          = Number(document.getElementById('initial-amount').value);                          //  Начальная сумма
-        this.monthlyReplenishment   = Number(document.getElementById('amount-of-monthly-replenishment').value);         //  Сумма ежемесячного пополнения
-        this.depositTerm            = Number(document.getElementById('deposit-term').value);                            //  Срок вклада  
-        this.depositCurrency        = document.getElementById('deposit-currency').value;                                //  Валюта вклада   
+        this.initialAmount = Number(document.getElementById("initial-amount").value);
+        this.monthlyReplenishment = Number(document.getElementById("amount-of-monthly-replenishment").value);
+        this.depositTerm = Number(document.getElementById("deposit-term").value);
+        this.depositCurrency = document.getElementById("deposit-currency").value.trim().toUpperCase();
     }
 }
 
 class BankProduct {
-    constructor({bankName, investName, currency , incomeType, sumMin, sumMax, termMin, termMax, canDeposit}) {
-        this.bankName   = bankName;                                                                         //  Название банка
-        this.investName = investName;                                                                       //  Название вклада
-        this.currency   = currency;                                                                         //  Валюта          
-        this.incomeType = incomeType;                                                                       //  Доходность %
-        this.sumMin     = sumMin;                                                                           //  Минимальная сумма
-        this.sumMax     = sumMax;                                                                           //  Максимальная сумма
-        this.termMin    = termMin;                                                                          //  Минимальный срок      
-        this.termMax    = termMax;                                                                          //  Максимальный срок
-        this.canDeposit = canDeposit;                                                                       //  Возможность пополнения
+    constructor({ bankName, investName, currency, incomeType, sumMin, sumMax, termMin, termMax, canDeposit }) {
+        this.bankName = bankName;       // Bank name
+        this.investName = investName;   // Deposit name
+        this.currency = currency;       // Currency
+        this.incomeType = incomeType;   // Annual interest rate, %
+        this.sumMin = sumMin;           // Minimum amount
+        this.sumMax = sumMax;           // Maximum amount (null = unlimited)
+        this.termMin = termMin;         // Minimum term, months
+        this.termMax = termMax;         // Maximum term, months
+        this.canDeposit = canDeposit;   // Whether top-ups are allowed
     }
 }
 
 class RecommendedProduct {
     constructor(bankName, investName, incomeType, totalAmount) {
-        this.bankName       = bankName;                             // Название банка
-        this.investName     = investName;                           // Название вклада
-        this.incomeType     = incomeType;                           // Доходность %
-        this.totalAmount    = totalAmount;                          // Итоговая сумма 
-    }   
+        this.bankName = bankName;
+        this.investName = investName;
+        this.incomeType = incomeType;
+        this.totalAmount = totalAmount;
+    }
 }
 
 class Validator {
     constructor() {
-        this.deposit = new Deposit(); 
+        this.deposit = new Deposit();
     }
+
     verifyInputFields() {
-        const errorArray = [];
-        let artisan = new Artisan();
-        artisan.drawErrors(errorArray);
-        if((this.deposit.initialAmount >= 0) && (this.deposit.monthlyReplenishment >= 0) && (this.deposit.depositTerm > 0 && this.isInteger(this.deposit.depositTerm)) && (this.deposit.depositCurrency == 'RUB' || this.deposit.depositCurrency == 'USD')) {
-           return this.deposit;
-        } 
-        if(!(this.deposit.initialAmount >= 0)) {
-            errorArray.push("Неверный формат начальной суммы");
+        const errors = [];
+        const artisan = new Artisan();
+
+        if (!(this.deposit.initialAmount >= 0)) {
+            errors.push("Initial amount must be a non-negative number.");
         }
-        if(!(this.deposit.monthlyReplenishment >= 0)) {
-            errorArray.push("Неверный формат суммы ежемесячного пополнения");
+        if (!(this.deposit.monthlyReplenishment >= 0)) {
+            errors.push("Monthly top-up must be a non-negative number.");
         }
-        if(!(this.deposit.depositTerm > 0 && this.isInteger(this.deposit.depositTerm))) {
-            errorArray.push("Неверный формат cрока вклада");
+        if (!(this.deposit.depositTerm > 0 && this.isInteger(this.deposit.depositTerm))) {
+            errors.push("Term must be a positive whole number of months.");
         }
-        if(!(this.deposit.depositCurrency == 'RUB' || this.deposit.depositCurrency == 'USD')) {
-            errorArray.push("Неверный формат валюты вклада");
+        if (!(this.deposit.depositCurrency === "RUB" || this.deposit.depositCurrency === "USD")) {
+            errors.push("Currency must be either RUB or USD.");
         }
-        artisan.drawErrors(errorArray);
-        return false;
+
+        artisan.drawErrors(errors);
+        return errors.length === 0 ? this.deposit : false;
     }
+
     isInteger(number) {
-        if(number % 1 == 0) {
-            return true;
-        }
-        return false; 
+        return Number.isInteger(number);
     }
 }
 
 class Parser {
     constructor() {
-        this.array = Array.from(globalArray);   // JSON -> Array
-    } 
+        this.array = Array.from(bankProductsData);   // Raw data -> array
+    }
+
     getBankProducts() {
-        for(let i = 0; i < this.array.length; i++) {
-            this.array[i] = new BankProduct(this.array[i]);
-        }
-        return this.array;
+        return this.array.map((item) => new BankProduct(item));
     }
 }
 
 class Artisan {
-    constructor() {
-        this.tableId = document.getElementById('table');
-    }
-
     drawTable(recommendedProducts) {
-        let table = ``;
-        if(recommendedProducts.length == 0) {
-            document.getElementById('table-wrapper').innerHTML = table;
+        const wrapper = document.getElementById("table-wrapper");
+        if (recommendedProducts.length === 0) {
+            wrapper.innerHTML = "";
             return;
         }
-        table += `
-        <table>
-            <tr>    
-                <th>Название банка</th>
-                <th>Вклад</th>
-                <th>Процент</th>
-                <th>Итоговая сумма</th>
-            </tr>`;
-            for(let i = 0; i < recommendedProducts.length; i++) {
-                table += `
+
+        const rows = recommendedProducts
+            .map(
+                (p) => `
                 <tr>
-                    <td>${recommendedProducts[i].bankName}</td>
-                    <td>${recommendedProducts[i].investName}</td>
-                    <td>${recommendedProducts[i].incomeType}</td>
-                    <td>${recommendedProducts[i].totalAmount}</td>
-                </tr>`;
-            }
-        table += 
-        `</table>`;
-        document.getElementById('table-wrapper').innerHTML = table;
-        return;
+                    <td>${p.bankName}</td>
+                    <td>${p.investName}</td>
+                    <td>${p.incomeType}%</td>
+                    <td class="amount">${p.totalAmount.toLocaleString("en-US")}</td>
+                </tr>`
+            )
+            .join("");
+
+        wrapper.innerHTML = `
+            <table>
+                <tr>
+                    <th>Bank</th>
+                    <th>Deposit</th>
+                    <th>Rate</th>
+                    <th>Projected balance</th>
+                </tr>
+                ${rows}
+            </table>`;
     }
 
-    drawErrors(errorArray) {
-        let errorList = ``;
-        for(let i=0; i<errorArray.length; i++) {
-            errorList += `<li class="error-list-item">${errorArray[i]}</li>`;
-        }
-        document.getElementById('error-list').innerHTML = errorList;
-        return;
+    drawMessage(message) {
+        const wrapper = document.getElementById("table-wrapper");
+        wrapper.innerHTML = message ? `<p class="message">${message}</p>` : "";
+    }
+
+    drawErrors(errors) {
+        const list = errors.map((error) => `<li class="error-list-item">${error}</li>`).join("");
+        document.getElementById("error-list").innerHTML = list;
     }
 }
 
+// Stamp the current year in the footer and boot the app.
+document.querySelector(".copyright-year").textContent = new Date().getFullYear();
 new Application();
